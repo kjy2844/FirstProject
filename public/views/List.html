@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+
+  
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <title>Poll</title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light" style='background-color: #f7f7f7; z-index: 3;'>
+    <span class="navbar-brand mb-0 h1" href="./result.html">Sparcs Vote</span>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/test">Make </a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="">List <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled">Ver.2</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="vote_table" id="table" style="margin: 0 auto; width: 75%;">
+  </div>
+
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+  <script>
+    function returnresult(id) {
+      $.get("/result/" + id, function (data) {
+        const div = document.getElementById("footerfather" + id); // 숫자가 뒤죽박죽 -> 주기적을 reset하자
+        let result = `<div> \ `
+        let sum = 0;
+        let n = 0;
+        for(let j in data){
+          sum += data[j].number;
+          console.log(data[j]);
+        }
+        for(let i in data) {
+          n = data[i].number*100 / sum;
+          result += 
+          `<p style="margin-top: 10px">${data[i].answer}: ${data[i].number}명</p> \
+            <div class="progress" style="margin: -5px 20px 10px 20px"> \
+              <div class="progress-bar" role="progressbar" style="width: ${n}%; background-color: #ff7a36;" aria-valuenow="${n}" aria-valuemin="0" aria-valuemax="100"></div> \
+            </div> \ `;
+          console.log(result);
+        }
+        result += `</div>`;
+        document.getElementById("middle" + id).innerHTML = result;
+        div.innerHTML = "";
+      })
+    }
+  </script>
+  <script>
+    function sendresult(id, option) {
+      
+      if (option == "only"){
+        const Bcontent = document.querySelector(`input[name="vote${id}"]:checked`);
+        if (Bcontent == null) {
+          alert("체크 안하면  paco")
+          return;
+        }
+        const content = Bcontent.value;
+        document.getElementById(`result${id}`).disabled = false;
+        if (JSON.parse(localStorage.getItem('answer')) != null) localStorage.setItem('answer', JSON.stringify(JSON.parse(localStorage.getItem('answer')).concat([id])));
+        else localStorage.setItem('answer', JSON.stringify([id]));
+        document.getElementById(`send${id}`).disabled = true;
+        $.post("/vote_list/my_opinion", { id: id, choice: content, option: "only" }, function (data) {
+          console.log(id);
+          console.log(content);
+        })
+      }
+      else {
+        let morearray = "";
+        const Bcontent = $(`input[name="vote${id}"]:checked`);
+        if (Bcontent.length == 0) {
+          alert("체크를 해")
+          return;
+        }
+        if (JSON.parse(localStorage.getItem('answer')) != null) localStorage.setItem('answer', JSON.stringify(JSON.parse(localStorage.getItem('answer')).concat([id])));
+        else localStorage.setItem('answer', JSON.stringify([id]));
+        $(`input[name="vote${id}"]:checked`).each(function () {
+          morearray += ($(this).val()).toString();
+          morearray += ",";
+          document.getElementById(`result${id}`).disabled = false;
+          document.getElementById(`send${id}`).disabled = true;
+          $.post("/vote_list/my_opinion", { id: id, choice: morearray, option: "more" }, function (data) {
+            console.log(id);
+            console.log(morearray);
+          })
+        });
+      }
+    }
+  </script>
+  <script>
+    function get_all() {
+      $.get("/vote_list", function (votes) {
+        const table = document.getElementById("table");
+
+        for (let i in votes) {
+          const vote = votes[i];
+          let card = 
+          `<div class='card text-center' style="width: 100%; margin-top: 15px; background-color: #fffdfc;"> \
+            <h5 class='card-header text-white' style='background-color:#ffbfb0'>${vote.question}</h5> \ 
+            <div id="middle${i}"> \ `;
+          
+          if (vote.option == "only"){
+            for(let j in vote.answers){//이름 다시 써야할것같은데
+              card += 
+              `<div class='card-text form-check' style='margin-top: 10px;'> \
+                <input class="form-check-input" type="radio" name="vote${i}" id="${i}-${j}" value="${j}"> \
+                  <label class="form-check-labe${j}" for="${i}-${j}"> \
+                    ${vote.answers[j].answer} \
+                  </label> \
+                </div>`;
+            }
+          }
+          else {
+            for (let j in vote.answers) {
+              card += 
+              `<div class='card-text form-check' style='margin-top: 10px;'> \
+                <input class="form-check-input" type="checkbox" name="vote${i}" id="${i}-${j}" value="${j}"> \
+                  <label class="form-check-labe${j}" for="${i}-${j}"> \
+                    ${vote.answers[j].answer} \
+                  </label> \
+              </div>`;
+            }
+          }
+          card += `
+            </div> \
+            <div id='footerfather${i}'> \
+              <div class='card-footer' id='footer${i}' style="background-color: #fff3f0;"> \
+                <button type="button" class="btn btn-sm" id='send${i}' onclick='sendresult(${i}, "${vote.option}")' style='background-color: #ffa77a'>투표하기</button> \
+                <button type="button" class="btn btn-sm" id='result${i}' onclick='returnresult(${i})' style='background-color: #ffa77a' >결과 확인</button> \
+              </div> \
+            </div> \ 
+          </div >`;
+          table.innerHTML += card;
+          document.getElementById(`result${i}`).disabled = true;
+        }
+        const answerlist = JSON.parse(localStorage.getItem('answer'));
+        if (answerlist != null) {
+          for(let i of answerlist){
+            document.getElementById(`send${i}`).disabled = true;
+            document.getElementById(`result${i}`).disabled = false;
+          }
+        }
+      })
+    }
+    get_all();
+  </script>
+</body>
+
+</html>

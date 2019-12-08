@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <title>Poll</title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light" style='background-color: #f7f7f7; z-index: 3;'>
+    <span class="navbar-brand mb-0 h1" href="./result.html">Sparcs Vote</span>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="">Make <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/list">List</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled">Ver.2</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="card" style="margin: 0 auto; width:60%; margin-top: 20px; background-color: #fffdfc;">
+    <form style = "text-align:center;padding:16px;">
+      <div class="form-group row">
+        <label for="inputQuestion" class="col-sm-2 col-form-label">Question</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" id="inputQuestion" placeholder="Question">
+        </div>
+      </div>
+      <fieldset class="form-group">
+        <div class="row">
+          <legend class="col-form-label col-sm-2 pt-0">Option</legend>
+          <div class="col-sm-10">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="only" checked>
+              <label class="form-check-label" for="gridRadios1">
+                하나만 선택 가능
+              </label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios2" value="more">
+              <label class="form-check-label" for="gridRadios2">
+                복수응답 가능
+              </label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="form-group">
+        <div class="row">
+          <legend class="col-form-label col-sm-2 pt-0">Answers</legend>
+          <div class="col-sm-10">
+            <div class="form-group" id="inputAnswers">
+              <input type="text" class="form-control" id="inputAnswer0" placeholder="Answer" style="margin-bottom: 10px">
+              <input type="text" class="form-control" id="inputAnswer1" placeholder="Answer" style="margin-bottom: 10px">
+            </div>
+            <div class="col-sm-12">
+              <button type="button" class="btn btn-plus" id="plus" style='background-color: #ffa77a'>응답 추가</button>
+              <button type="button" class="btn btn-minus" id="minus" style='background-color: #ffa77a'>응답 제거</button>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <div class="form-group">
+        <button type="button" class="btn btn-submit" id="final" style='background-color: #ffa77a'>제출</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+  <script>
+    let n = 2; //n크기에 따라 에러처리 해줘야함
+    document.getElementById("plus").addEventListener('click', function (event) {
+      event.preventDefault();
+      const inputAnswers = document.getElementById("inputAnswers");
+      const form = `<input type="text" class="form-control" id="inputAnswer${n}" placeholder="Answer" style="margin-bottom: 10px">`;
+      n++;
+      inputAnswers.innerHTML += form;
+    });
+
+    document.getElementById("minus").addEventListener('click', function (event) {
+      event.preventDefault();
+      n--;
+      //document.getElementById("inputAnswer" + n) = "";
+      $("input").remove("#inputAnswer" + n);
+    });
+
+    document.getElementById("final").addEventListener('click', function (event) {
+      event.preventDefault();
+      const Question = document.getElementById("inputQuestion").value;
+      const Option = document.querySelector('input[name="gridRadios"]:checked').value;
+      const Answers = [];
+      for(let i = 0; i < n; i++){
+        const Answer = document.getElementById("inputAnswer" + i).value;
+        Answers.push( {answer: Answer, number: 0} );
+      }
+      console.log(Answers);
+      if ((Question == "") || (Option == "") || (Answers.length == 0)) {
+        alert("전부 기입하세요^gocksdlsms dlfqp^")
+        return;
+      }
+      $.post("/vote_list", { question: Question, option:Option, answers:JSON.stringify(Answers) }, function () {
+        document.getElementById("inputQuestion").value = "";
+        for (let i = 0; i < n; i++) {
+          document.getElementById("inputAnswer" + i).value = "";
+        }
+        window.location.href = "/list";
+      })
+      //제출완료 팝업 띄우고 싶음
+    });
+  </script>
+</body>
+
+</html>

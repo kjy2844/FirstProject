@@ -1,0 +1,221 @@
+<html lang="ko"><head>
+    <meta http-equiv="Content-Type" content="text/html">
+    <meta charset="UTF-8">
+    <title>vote_list</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" src="index.css"/>
+</head>
+<body>
+    <div>
+        <!-- <form action="/vote_list" method="post"> -->
+        <form>
+            <h1>List</h1>
+            <input type="text" id="content" name="content" placeholder="제목을 입력해주세요">
+            <!--<button id="new_post" type="submit" class="new_post">추가</button> -->
+            <button id="add" class="new_post">완료</button>
+            <section class="list"></section>
+        </form>
+    </div>
+    <div id="table" class="table_1">
+    </div>
+    <script>
+        /*document.getElementsByClassName("vote_send")[0].addEventListener('click',function(){
+            let input=document.forms[0].elements[0].value;
+            const url="http://ssal.sparcs.org:56780/vote_list";
+            sendVote(url,input);
+        })
+        function sendVote(url,input){
+            let xhr_obj={"content":input};
+            let xhr_str=JSON.stringify(xhr_obj);
+            let xhr=new XMLHttpRequest();
+            xhr.open("post",url,true);
+            xhr.setRequestHeader('content-type','application/json');
+            xhr.send(xhr_str);
+            xhr.addEventListener('load',function(){
+                let result=JSON.parse(xhr.responseText);
+                document.getElementsByClassName("result")[0].innerHTML=document.getElementsByClassName("result")[0].innerHTML+result.content;
+            });
+        };*/
+
+        function getRadio(text, id) {
+            const radio = document.createElement("input");
+            const label = document.createElement("label");
+            radio.setAttribute("type", "radio");
+            radio.setAttribute("id", id + text);
+            radio.name = id;
+            radio.value = text;
+            label.innerText = text;
+            label.htmlFor = text;
+
+            return [radio, label];
+        }
+
+        function sendresult(id) {
+            const content = document.querySelector('input[name=' + '"' + id + '"' + ']:checked').value;
+            $.post("/vote_list/my_opinion", {id : id, choice: content}, function (data) {
+                console.log(id);
+                console.log(content);
+            })
+        }
+
+        function returnresult(id) {
+            $.get("/result/" + id , function (data) {
+                const div = document.getElementById(id);
+                const comment = document.getElementById(id + 'title');
+
+                comment.innerHTML = data.comment;
+                //console.log(data);
+                /*$.ajax({
+                    crossOrigin: true,
+                    dataType: "json",
+                    url: "/result" + id,
+                    success: function (data) {
+                        console.log(data);
+                    }
+                });*/
+            })
+        }
+        
+        function get_all() {
+            $.get("/vote_list", function(datas){
+                for(var i in datas){
+                    const data = datas[i];
+                    const table = document.getElementById("table");
+                    const div = document.createElement("div");
+                    const number = document.createElement("div");
+                    const title = document.createElement("div");
+                    const submit = document.createElement("input");
+                    const result = document.createElement("input");
+                    console.log(data);
+                    div.style.border = "solid #0000FF";
+                    div.style.display = "flex";
+
+                    number.style.flex = "1";
+                    title.style.flex = "1";
+
+                    console.log(data);
+                    //cnosole.log(data_id);
+                    div.setAttribute('ID', data.id);
+                    title.setAttribute('ID', data.id + 'title');
+
+                    number.innerHTML = data.id;
+                    title.innerHTML = data.content;
+
+                    submit.setAttribute('type', 'submit');
+                    submit.setAttribute('ID', data.id + 'submit');
+                    //submit.setAttribute('value', 'Send Mail');
+                    submit.setAttribute("onclick", "sendresult(" + data.id + ");");
+
+                    result.setAttribute('type', 'submit');
+                    result.setAttribute('ID', data.id + 'result');
+                    //submit.setAttribute('value', 'Send Mail');
+
+                    //result.setAttribute("href", "./result.html");
+
+                    result.setAttribute("onclick", "returnresult(" + data.id + ");");
+
+                    /*
+                    choiceA.setAttribute("type", "radio");
+                    choiceA.name = "choice";
+                    choiceA.value = "A";
+                    choiceA.insertAdjacentText("afterend", "A");
+                    choiceB.setAttribute("type", "radio");
+                    choiceB.name = "choice";
+                    choiceB.value = "B";
+                    choiceB.innerText = "B";
+                    */
+                    const arr1 = getRadio("A", data.id);
+                    const arr2 = getRadio("B", data.id);
+
+                    table.appendChild(div);
+                    div.appendChild(number);
+                    div.appendChild(title);
+                    div.appendChild(arr1[0]);
+                    div.appendChild(arr1[1]);
+                    div.appendChild(arr2[0]);
+                    div.appendChild(arr2[1]);
+                    div.appendChild(submit);
+                    div.appendChild(result);
+                    /*
+                    div.appendChild(choiceA);
+                    div.appendChild(choiceB);
+                    */
+
+                    document.getElementById("content").value = "";
+                }
+            })
+        }
+        get_all();
+        document.getElementById("add").addEventListener('click', function(event) {
+            event.preventDefault();
+            const content = document.getElementById("content").value;
+            $.post("/vote_list", { content: content }, function (data) {
+                const table = document.getElementById("table");
+                const div = document.createElement("div");
+                const number = document.createElement("div");
+                const title = document.createElement("div");
+                const submit = document.createElement("input");
+                const result = document.createElement("input");
+
+                div.style.border = "solid #0000FF";
+                div.style.display = "flex";
+
+                number.style.flex = "1";
+                title.style.flex = "1";
+                
+                console.log(data);
+                //cnosole.log(data_id);
+                div.setAttribute('ID', data.id);
+                title.setAttribute('ID', data.id + 'title');
+
+                number.innerHTML = data.id;
+                title.innerHTML = data.content;
+
+                submit.setAttribute('type', 'submit');
+                submit.setAttribute('ID', data.id+ 'submit');
+                //submit.setAttribute('value', 'Send Mail');
+                submit.setAttribute("onclick", "sendresult(" + data.id + ");");
+
+                result.setAttribute('type', 'submit');
+                result.setAttribute('ID', data.id+ 'result');
+                //submit.setAttribute('value', 'Send Mail');
+                
+                //result.setAttribute("href", "./result.html");
+                
+                result.setAttribute("onclick", "returnresult(" + data.id + ");");
+
+                /*
+                choiceA.setAttribute("type", "radio");
+                choiceA.name = "choice";
+                choiceA.value = "A";
+                choiceA.insertAdjacentText("afterend", "A");
+                choiceB.setAttribute("type", "radio");
+                choiceB.name = "choice";
+                choiceB.value = "B";
+                choiceB.innerText = "B";
+                */
+                const arr1 = getRadio("A", data.id);
+                const arr2 = getRadio("B", data.id);
+
+                table.appendChild(div);
+                div.appendChild(number);
+                div.appendChild(title);
+                div.appendChild(arr1[0]);
+                div.appendChild(arr1[1]);
+                div.appendChild(arr2[0]);
+                div.appendChild(arr2[1]);
+                div.appendChild(submit);
+                div.appendChild(result);
+                /*
+                div.appendChild(choiceA);
+                div.appendChild(choiceB);
+                */
+
+                document.getElementById("content").value = "";
+            })
+        });
+
+
+    </script>
+
+</body></html>
